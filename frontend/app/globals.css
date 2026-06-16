@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* TipTap 에디터 기본 스타일 */
+.tiptap-editor .ProseMirror {
+  outline: none;
+  min-height: 180px;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: #747878;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap-editor .ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+.tiptap-editor .ProseMirror p {
+  margin: 0.5em 0;
+}
+
+.tiptap-editor .ProseMirror ul,
+.tiptap-editor .ProseMirror ol {
+  padding-left: 1.5em;
+}
