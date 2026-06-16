@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    # H2 테스트에서는 스키마 없이 public에 테이블 생성
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+
+jwt:
+  secret: test-jwt-secret-must-be-at-least-32-characters-long
+  access-token-expiration: 1800000
+  refresh-token-expiration: 604800000
+
+cors:
+  allowed-origins:
+    - http://localhost:3000
+
+app:
+  frontend-url: http://localhost:3000
+  cookie-secure: false
+
+aws:
+  region: ap-northeast-2
+  s3-bucket: test-bucket
+  cloudfront-domain: https://test.cloudfront.net
+  access-key-id: test-key
+  secret-access-key: test-secret

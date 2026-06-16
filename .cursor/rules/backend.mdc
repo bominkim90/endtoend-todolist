@@ -1,0 +1,47 @@
+---
+description: backend/ 폴더 작업 시 적용되는 Spring Boot 규칙
+globs: backend/**
+alwaysApply: false
+---
+
+# Backend 규칙 (Spring Boot)
+
+## 레이어 구조 준수
+
+Controller → Service → Repository 순서로 역할 분리
+- Controller: 요청/응답만 담당
+- Service: 비즈니스 로직
+- Repository: DB 접근
+
+## API 응답 포맷
+
+모든 API 응답은 아래 공통 포맷 사용:
+```json
+{
+  "success": true,
+  "message": "처리 완료",
+  "data": {}
+}
+```
+
+## 인증/보안
+
+- JWT 토큰 검증은 Filter 레이어에서 처리
+- 민감 정보(JWT secret, DB password, OAuth client secret 등)는 application.yml이 아닌 환경변수로 관리
+- SQL Injection 방지를 위해 JPA/JPQL 사용, 날 쿼리(native query) 최소화
+
+## Database
+
+- ddl-auto는 validate 또는 none 사용 (자동 테이블 생성 금지 — DB는 별도 SQL 스크립트로 관리)
+- 연관관계 조회 시 N+1 문제 주의, 필요 시 fetch join 사용
+
+## 패키지 구조
+
+```
+backend/src/main/java/com/todolist/
+├── auth/         ← 인증 (JWT, OAuth)
+├── user/         ← 유저 도메인
+├── todo/         ← 투두 도메인
+├── common/       ← 공통 응답 포맷, 예외 처리
+└── config/       ← Security, CORS 등 설정
+```
