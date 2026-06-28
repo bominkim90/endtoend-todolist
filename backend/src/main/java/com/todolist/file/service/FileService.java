@@ -3,20 +3,20 @@ package com.todolist.file.service;
 import com.todolist.common.exception.BusinessException;
 import com.todolist.common.exception.ErrorCode;
 import com.todolist.config.AwsProperties;
-import com.todolist.file.dto.FileUploadResponse;
+import com.todolist.file.dto.PresignedUrlRequest;
+import com.todolist.file.dto.PresignedUrlResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
-import java.io.IOException;
+import java.time.Duration;
 import java.util.Set;
 import java.util.UUID;
 
 /**
- * S3 이미지 업로드 비즈니스 로직
+ * S3 Presigned URL 발급 — 프론트가 S3에 직접 PUT 업로드
  */
 @Service
 @RequiredArgsConstructor
@@ -29,43 +29,35 @@ public class FileService {
 			"image/webp"
 	);
 
-	private final S3Client s3Client;
+	private static final Duration PRESIGNED_URL_EXPIRATION = Duration.ofMinutes(10);
+
+	private final S3Presigner s3Presigner;
 	private final AwsProperties awsProperties;
 
-	public FileUploadResponse uploadImage(MultipartFile file) {
-		validateFile(file);
+	public PresignedUrlResponse createPresignedUploadUrl(PresignedUrlRequest request) {
+		validateContentType(request.getContentType());
 
-		String originalFilename = file.getOriginalFilename();
-		String extension = extractExtension(originalFilename);
+		String extension = extractExtension(request.getFileName());
 		String key = "images/" + UUID.randomUUID() + extension;
 
-		try {
-			PutObjectRequest putRequest = PutObjectRequest.builder()
-					.bucket(awsProperties.getS3Bucket())
-					.key(key)
-					.contentType(file.getContentType())
-					.build();
+		PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+				.bucket(awsProperties.getS3Bucket())
+				.key(key)
+				.contentType(request.getContentType())
+				.build();
 
-			s3Client.putObject(putRequest, RequestBody.fromBytes(file.getBytes()));
-		} catch (IOException e) {
-			throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
-		}
+		PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+				.signatureDuration(PRESIGNED_URL_EXPIRATION)
+				.putObjectRequest(putObjectRequest)
+				.build();
 
-		String cloudfrontDomain = awsProperties.getCloudfrontDomain();
-		if (cloudfrontDomain.endsWith("/")) {
-			cloudfrontDomain = cloudfrontDomain.substring(0, cloudfrontDomain.length() - 1);
-		}
+		String presignedUrl = s3Presigner.presignPutObject(presignRequest).url().toString();
+		String fileUrl = buildCloudFrontUrl(key);
 
-		String url = cloudfrontDomain + "/" + key;
-		return new FileUploadResponse(url);
+		return new PresignedUrlResponse(presignedUrl, fileUrl);
 	}
 
-	private void validateFile(MultipartFile file) {
-		if (file == null || file.isEmpty()) {
-			throw new BusinessException(ErrorCode.INVALID_INPUT, "업로드할 파일이 없습니다.");
-		}
-
-		String contentType = file.getContentType();
+	private void validateContentType(String contentType) {
 		if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
 			throw new BusinessException(ErrorCode.INVALID_FILE_TYPE);
 		}
@@ -76,5 +68,13 @@ public class FileService {
 			return "";
 		}
 		return filename.substring(filename.lastIndexOf("."));
+	}
+
+	private String buildCloudFrontUrl(String key) {
+		String cloudfrontDomain = awsProperties.getCloudfrontDomain();
+		if (cloudfrontDomain.endsWith("/")) {
+			cloudfrontDomain = cloudfrontDomain.substring(0, cloudfrontDomain.length() - 1);
+		}
+		return cloudfrontDomain + "/" + key;
 	}
 }

@@ -2,7 +2,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import type { ApiResponse } from "@/types/api";
 import type { Todo, TodoCreateRequest, TodoUpdateRequest } from "@/types/todo";
 import type { User } from "@/types/user";
-import { baseQueryWithReauth, getApiUrl } from "@/lib/api/baseQuery";
+import { baseQueryWithReauth } from "@/lib/api/baseQuery";
 
 // 백엔드 공통 응답 { success, message, data } 언래핑
 function unwrapResponse<T>(response: ApiResponse<T>): T {
@@ -23,6 +23,8 @@ export const todoApi = createApi({
       transformResponse: (response: ApiResponse<User>) =>
         unwrapResponse(response),
       providesTags: ["User"],
+      // 401 시 불필요한 refetch 반복 방지
+      keepUnusedDataFor: 0,
     }),
 
     // POST /api/auth/logout
@@ -125,43 +127,6 @@ export const todoApi = createApi({
         { type: "Todo", id: "LIST" },
       ],
     }),
-
-    // POST /api/files/upload — multipart는 queryFn으로 처리
-    uploadImage: builder.mutation<string, File>({
-      queryFn: async (file) => {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-          const response = await fetch(getApiUrl("/api/files/upload"), {
-            method: "POST",
-            credentials: "include",
-            headers: { Accept: "application/json" },
-            body: formData,
-          });
-
-          const json = (await response.json()) as ApiResponse<{ url: string }>;
-
-          if (!response.ok || !json.success) {
-            return {
-              error: {
-                status: response.status,
-                data: json.message ?? "이미지 업로드에 실패했습니다.",
-              },
-            };
-          }
-
-          return { data: json.data.url };
-        } catch {
-          return {
-            error: {
-              status: "FETCH_ERROR",
-              error: "이미지 업로드에 실패했습니다.",
-            },
-          };
-        }
-      },
-    }),
   }),
 });
 
@@ -175,5 +140,4 @@ export const {
   useUpdateTodoMutation,
   useDeleteTodoMutation,
   useToggleTodoCompleteMutation,
-  useUploadImageMutation,
 } = todoApi;

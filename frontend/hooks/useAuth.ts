@@ -10,7 +10,11 @@ export function useAuth(options?: { skip?: boolean }) {
   const router = useRouter();
   const { data: user, isLoading, isFetching, isError } = useGetMeQuery(
     undefined,
-    { skip: options?.skip },
+    {
+      skip: options?.skip,
+      refetchOnFocus: false,
+      refetchOnReconnect: false,
+    },
   );
   const [logout] = useLogoutMutation();
 

@@ -4,6 +4,7 @@ import com.todolist.auth.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,8 +30,24 @@ public class SecurityConfig {
 	private final OAuth2SuccessHandler oAuth2SuccessHandler;
 	private final CustomOAuth2UserService customOAuth2UserService;
 	private final CorsProperties corsProperties;
+	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+	/**
+	 * 헬스체크 전용 필터 체인 — OAuth2·JWT 필터를 거치지 않고 인증 없이 200 반환
+	 * (메인 체인보다 우선 적용)
+	 */
+	@Bean
+	@Order(1)
+	public SecurityFilterChain healthSecurityFilterChain(HttpSecurity http) throws Exception {
+		http
+				.securityMatcher("/health")
+				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+				.csrf(AbstractHttpConfigurer::disable);
+		return http.build();
+	}
 
 	@Bean
+	@Order(2)
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 				.csrf(AbstractHttpConfigurer::disable)
@@ -45,6 +62,9 @@ public class SecurityConfig {
 						).permitAll()
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.anyRequest().authenticated()
+				)
+				.exceptionHandling(ex -> ex
+						.authenticationEntryPoint(jwtAuthenticationEntryPoint)
 				)
 				.oauth2Login(oauth2 -> oauth2
 						.userInfoEndpoint(userInfo ->

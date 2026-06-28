@@ -1,11 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useAuth } from "@/hooks/useAuth";
+import { redirectToGoogleLogin } from "@/lib/api/auth";
 
 // Google 소셜 로그인 화면 (피그마 디자인 기반)
 export default function LoginCard() {
-  const { handleGoogleLogin } = useAuth();
+  // fetch가 아닌 전체 페이지 이동 — OAuth 리다이렉트 흐름 유지
+  const handleGoogleLogin = () => {
+    redirectToGoogleLogin();
+  };
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-linear-to-b from-[#F8F9FA] to-white px-6 py-16">

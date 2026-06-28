@@ -1,0 +1,23 @@
+# Gradle 빌드 산출물·캐시
+build/
+.gradle/
+out/
+
+# Git
+.git/
+.gitignore
+
+# 환경변수·민감 정보 (이미지에 포함 금지)
+.env
+.env.*
+!.env.example
+
+# IDE·OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# 문서 (런타임 불필요)
+*.md
+HELP.md

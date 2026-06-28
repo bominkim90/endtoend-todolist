@@ -1,0 +1,29 @@
+# 의존성·빌드 산출물 (이미지 안에서 다시 설치·생성)
+node_modules
+.next
+
+# 버전 관리
+.git
+.gitignore
+
+# 환경변수·로컬 설정 (빌드 시 --build-arg로 주입)
+.env*
+!.env.local.example
+
+# 문서·에디터 설정
+README.md
+*.md
+.vscode
+.idea
+
+# 테스트·CI
+coverage
+.nyc_output
+
+# OS 잡파일
+.DS_Store
+Thumbs.db
+
+# Docker 자체 파일 (빌드 컨텍스트에 불필요)
+Dockerfile
+.dockerignore

@@ -29,6 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private final JwtTokenProvider jwtTokenProvider;
 
 	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		// 헬스체크는 별도 SecurityFilterChain에서 처리 — JWT 검증 생략
+		return "/health".equals(request.getRequestURI());
+	}
+
+	@Override
 	protected void doFilterInternal(
 			HttpServletRequest request,
 			HttpServletResponse response,

@@ -2,17 +2,14 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 
-// 루트 — 인증 여부에 따라 /todos 또는 /login으로 리다이렉트
+// 루트 — /todos로 이동 (미로그인 시 todos/layout의 useRequireAuth가 /login으로 보냄)
 export default function HomePage() {
   const router = useRouter();
-  const { isInitialized, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    if (!isInitialized) return;
-    router.replace(isAuthenticated ? "/todos" : "/login");
-  }, [isInitialized, isAuthenticated, router]);
+    router.replace("/todos");
+  }, [router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F8F9FA]">
