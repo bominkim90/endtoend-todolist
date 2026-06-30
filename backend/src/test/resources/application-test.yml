@@ -20,6 +20,7 @@ spring:
           google:
             client-id: test-client-id
             client-secret: test-client-secret
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
 
 jwt:
   secret: test-jwt-secret-must-be-at-least-32-characters-long

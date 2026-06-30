@@ -30,9 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files — .env.local은 커밋 제외, .example 템플릿은 포함
+# env files — .env.local / .env.deploy는 커밋 제외, .example 템플릿은 포함
 .env
 .env.local
+.env.deploy
 .env.development.local
 .env.test.local
 .env.production.local

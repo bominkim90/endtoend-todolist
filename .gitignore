@@ -12,6 +12,8 @@ Thumbs.db
 .env.local
 .env.*.local
 backend/.env
+backend/.env.deploy
+frontend/.env.deploy
 
 # Frontend
 frontend/.next/
